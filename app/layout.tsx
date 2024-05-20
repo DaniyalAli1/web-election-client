@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Sidebar from "@/components/sidebar";
+import ConnectWallet from "@/components/ConnectWallet";
+import { ThirdwebProvider } from "@/providers/ThirdWebProviders";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +20,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <ThirdwebProvider>
+        <ConnectWallet/>
+        <Sidebar/>
+        {children}
+        </ThirdwebProvider>
+        </body>
     </html>
   );
 }
