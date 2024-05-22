@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useSendTransaction } from "thirdweb/react"
+import { contract } from "@/lib/thirdweb"
+import { PreparedTransaction, prepareContractCall } from "thirdweb"
  
 const formSchema = z.object({
   electionName: z.string().min(2).max(50),
@@ -30,27 +33,46 @@ const ElectionForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
         electionName: "",
-        electionDescription: "",
+        electioDescription: "",
         electionStartDate: new Date(),//current date
         electionEndDate: new Date(),//current date
     },
   })
+
+  const { mutateAsync: sendTransaction, } = useSendTransaction();
  
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+
     console.log(values)
+
+     
+
+  const {electionName: _name, electioDescription: _description, electionStartDate: _startTime, electionEndDate: _endTime }= values;
+    
+
+  const _startEpoch = BigInt(Math.floor(new Date(_startTime).getTime() / 1000));
+  const _endEpoch = BigInt(Math.floor(new Date(_endTime).getTime() / 1000));
+
+  const transaction = prepareContractCall({ 
+      contract, 
+      method: "createElection", 
+      params: [_name, _description, _startEpoch, _endEpoch] 
+    }) as PreparedTransaction;
+
+    sendTransaction(transaction).then((data)=> {}).catch((error:Error)=> {});
   }
+
+  
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="electionName"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Election Name <span className={cn("text-red-600 hidden",{'inline-block': fieldState.invalid})}>*</span></FormLabel>
+              <FormLabel>Election Name <span className={cn('text-red-600 hidden', {'inline-block' : fieldState.invalid})}>*</span></FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -60,10 +82,10 @@ const ElectionForm = () => {
 
         <FormField
         control={form.control}
-        name="electionDescription"
-        render={({ field }) => (
+        name="electioDescription"
+        render={({ field, fieldState }) => (
           <FormItem>
-            <FormLabel>Election Description <span className={cn("text-red-600 hidden",{'inline-block': fieldState.invalid})}>*</span></FormLabel>
+            <FormLabel>Election Description <span className={cn('text-red-600 hidden', {'inline-block' : fieldState.invalid})}>*</span></FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>
@@ -73,11 +95,11 @@ const ElectionForm = () => {
       <FormField
           control={form.control}
           name="electionStartDate"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Election Start Date <span className={cn("text-red-600 hidden",{'inline-block': fieldState.invalid})}>*</span></FormLabel>
+              <FormLabel>Election Start Date <span className={cn('text-red-600 hidden', {'inline-block' : fieldState.invalid})}>*</span></FormLabel>
               <FormControl>
-                <Input type="date" {...field} />
+                <Input type="date" {...field} value={field.value instanceof Date ? field.value.toISOString(): field.value}  />
               </FormControl>
             </FormItem>
           )}
@@ -87,9 +109,9 @@ const ElectionForm = () => {
           name="electionEndDate"
           render={({ field, fieldState }) => (
             <FormItem>
-              <FormLabel>Election End Date <span className={cn("text-red-600 hidden",{'inline-block': fieldState.invalid})}>*</span></FormLabel>
+              <FormLabel>Election End Date <span className={cn('text-red-600 hidden', {'inline-block' : fieldState.invalid})}>*</span></FormLabel>
               <FormControl>
-                <Input type="date" {...field} />
+                <Input type="date" {...field} value={field.value instanceof Date ? field.value.toISOString(): field.value} />
               </FormControl>
             </FormItem>
           )}
