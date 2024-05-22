@@ -19,6 +19,9 @@ import { cn } from "@/lib/utils"
 import { useSendTransaction } from "thirdweb/react"
 import { contract } from "@/lib/thirdweb"
 import { PreparedTransaction, prepareContractCall } from "thirdweb"
+import { Toaster } from "@/components/ui/toaster"
+import { toast } from "./ui/use-toast"
+
  
 const formSchema = z.object({
   electionName: z.string().min(2).max(50),
@@ -60,7 +63,20 @@ const ElectionForm = () => {
       params: [_name, _description, _startEpoch, _endEpoch] 
     }) as PreparedTransaction;
 
-    sendTransaction(transaction).then((data)=> {}).catch((error:Error)=> {});
+    sendTransaction(transaction).then((data)=> {
+
+      toast({
+        title: "Election Successfully created",
+        variant: "default"
+      })
+
+    }).catch((error:Error)=> {
+      toast({
+        title: "Scheduled: Catch up",
+        description: error.message,
+        variant: "destructive"
+      })
+    });
   }
 
   
@@ -117,7 +133,7 @@ const ElectionForm = () => {
           )}
         />
 
-        <Button type="submit">Submit</Button>
+        <Button type="submit">Create Election</Button>
       </form>
     </Form>
 
